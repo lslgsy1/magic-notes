@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    
+    <link rel="manifest" href="manifest.json">
+    
+    <title>备忘录</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: -apple-system, "HarmonyOS Sans", BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #ffffff;
+            color: #1a1a1a;
+            overflow: hidden; 
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* 华为顶部导航栏 */
+        .hw-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            height: 40px;
+            flex-shrink: 0;
+        }
+        
+        .hw-icon {
+            width: 24px;
+            height: 24px;
+            stroke: #333333;
+            stroke-width: 1.5;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        
+        .header-right {
+            display: flex;
+            gap: 25px;
+        }
+
+        /* 标题区域 */
+        .title-section {
+            padding: 10px 20px;
+            flex-shrink: 0;
+        }
+        
+        .title-text {
+            font-size: 28px;
+            font-weight: bold;
+            color: #1a1a1a;
+            margin: 0 0 8px 0;
+            border: none;
+            outline: none;
+            width: 100%;
+            background: transparent;
+        }
+        
+        .meta-text {
+            display: flex;
+            align-items: center;
+            font-size: 12px;
+            color: #999999;
+            gap: 10px;
+        }
+        
+        .meta-tag {
+            background-color: #f2f2f2;
+            padding: 3px 8px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+
+        /* 主输入区 */
+        textarea {
+            flex-grow: 1;
+            width: 100%;
+            border: none;
+            padding: 15px 20px;
+            font-size: 17px;
+            line-height: 1.6;
+            resize: none;
+            outline: none;
+            box-sizing: border-box;
+            caret-color: #0052d9; /* 鸿蒙蓝光标 */
+            margin-bottom: 50px; 
+        }
+
+        /* 华为底部工具栏 */
+        .hw-bottom-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 50px;
+            background-color: #ffffff;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-top: 1px solid #f0f0f0;
+            padding-bottom: env(safe-area-inset-bottom); 
+        }
+
+        .bottom-icon {
+            width: 22px;
+            height: 22px;
+            stroke: #1a1a1a;
+            stroke-width: 1.5;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* 魔术触控区 */
+        #secret-reveal {
+            position: fixed;
+            bottom: 60px; 
+            right: 0;
+            width: 50vw; 
+            height: 25vh; 
+            z-index: 9999;
+            display: flex;
+            justify-content: flex-end;
+            align-items: flex-end;
+            padding: 0 20px 15px 0;
+            box-sizing: border-box;
+            font-size: 17px; 
+            color: #1a1a1a; 
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="hw-header">
+        <svg class="hw-icon" viewBox="0 0 24 24"><path d="M20 12H4M10 6l-6 6 6 6"/></svg>
+        <div class="header-right">
+            <svg class="hw-icon" viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11"/></svg>
+            <svg class="hw-icon" viewBox="0 0 24 24" style="transform: scaleX(-1);"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11"/></svg>
+            <svg class="hw-icon" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
+        </div>
+    </div>
+
+    <div class="title-section">
+        <input type="text" class="title-text" value="标题" readonly>
+        <div class="meta-text">
+            <span>今天</span> 
+            <div class="meta-tag">未分类 <svg width="8" height="8" viewBox="0 0 24 24" fill="#999"><path d="M7 10l5 5 5-5z"/></svg></div>
+        </div>
+    </div>
+
+    <textarea id="chaosInput" placeholder=""></textarea>
+    <div id="secret-reveal"></div>
+
+    <div class="hw-bottom-bar">
+        <svg class="bottom-icon" viewBox="0 0 24 24"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+        <svg class="bottom-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg>
+        <svg class="bottom-icon" viewBox="0 0 24 24"><path d="M4 7V4h16v3M9 20h6M12 4v16"/></svg>
+        <svg class="bottom-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        <svg class="bottom-icon" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+        <svg class="bottom-icon" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/></svg>
+    </div>
+
+    <script>
+        const extraLifeWords = "condom beer wine whiskey vodka tequila gin cocktail martini snack chips nuts cigarette lighter smoke party music bass beat dance drunk taxi safe doctor nurse hospital patient surgery clinic anesthesia renal injury pain trauma emergency rescue ambulance medicine pill syringe propofol sleep urology kidney urine bladder organ lab test research science paper degree phd absurdity sisyphus freedom time fate soul death life universe chaos void truth shadow echo silence mirror destiny joke laugh crowd stage mic spotlight punchline funny awkward error microphone phone watch key wallet pizza burger meat rice cat dog bird fish lion tiger bag shoes hat ring chair table bed vape secret object memory iphone ipad macbook wifi internet google apple tiktok youtube uber podcast app screen password email camera magic card trick mind illusion guitar song chord pick melody panda koala spider snake turtle monkey elephant bear sun moon star rain snow wind sky juice cola icecream sushi taco noodle bread cake chocolate orange lemon glasses window door sofa lamp clock backpack book pen pencil paper tissue umbrella friend family mother father brother sister boss teacher student guy girl baby kid lipstick makeup perfume ticket receipt coin cash mask headphones earbuds charger cable plant vase painting scissors tape glue wrapper bottle cup fork knife spoon plate bowl napkin shirt pants jeans dress skirt sock boot jacket coat sweater hoodie cap scarf glove necklace bracelet earring water ice sugar salt cheese chicken beef pork egg grape strawberry melon candy cookie pie soup salad fry house room floor ceiling roof street road car bus train boat shop store mall park school office bar club tree grass leaf dirt rock stone sand sea ocean river lake mountain hill love hate fear hope dream thought idea past future lie art story rock boulder rebel read welcome cyclone";
+
+        const wordString = "abdomen ability accident account ache acid action activity actor actress addition address adjustment administration adult advantage advertisement advice age agency agreement air aircraft airline airplane airport alarm alcohol algebra alley alligator alphabet aluminum ambulance amount amusement anatomy anchor angel anger angle animal ankle answer ant antelope antenna apartment ape apparatus apparel appeal apple appliance application arch architecture area argument arm army array arrow art article ash ashtray aspect aspirin assessment asset assignment assistant association assumption atmosphere atom attack attempt attention attitude attorney attraction audience aunt author authority auto automobile autumn avenue average award awareness baby back background backpack bacon bacteria bag baggage bail bait baker bakery balance ball balloon ballot ballpoint bamboo ban banana band bandage bang bank banker bar barber bargain barrel base baseball basement basic basin basis basket basketball bat batch bath battery battle bay beach bead beam bean bear beard beast beat beauty bed bedroom bee beef beer beginner beginning belief bell belly belt bench bend benefit berry bet bicycle bid bike bill bin biology bird birth birthday biscuit bit bite black blade blame blanket blind block blood blow blue board boat body boil bomb bone book bookcase boot border boss botany bottle bottom boundary bow bowl box boy brain brake branch brass bread break breakfast breast breath brick bridge brief brother brown brush bubble bucket buddy budget bug building bulb bulk bull bullet bump bunch bundle burden bureau burn bus bush business businessman butter button cabbage cabin cabinet cable cafe cake calculation calculator calendar calf call camel camera camp campaign can canal cancer candidate candle candy cap capital captain car card cardboard care career carpenter carpet carriage carrot carry cart case cash cast castle cat catalog catch category cause caution cave cd ceiling celebration cell cellar cement cemetery center century ceremony chain chair chalk challenge chamber champion championship chance change channel chapter character charge charity chart chase chat check cheek cheese chef chemical chemistry cherry chest chicken chief child childhood chill chin chip chocolate choice cholesterol church cigarette cinema circle citizen city civil claim class classic classroom clay clerk client cliff climate clinic clock close closet cloth clothes cloud club clue coach coal coast coat cobweb code coffee coin cold collar collection college color column combination comfort comic command commission committee common communication community company comparison compass competition complaint complex component computer concept concern concert conclusion concrete condition conduct conference confidence conflict confusion connection consequence consideration constraint construction consumer contact container content contest context contract contrast contribution control convenience convention conversation cook cookie copper copy cord corn corner corporation correspondence corridor cost cotton couch cough count country county couple courage course court cousin cover cow crack craft crash crazy cream creation credit crew cricket crime criminal crisis criterion crop cross crowd crown cry crystal cube culture cup cupboard curiosity currency current curtain curve cushion custom customer cut cycle dad damage dance danger dare dark dash data database date daughter dawn day dead deal dealer death debate debt decade decision deck declaration decline decoration decrease deed deep deer defeat degree delay delivery demand dentist department departure deposit depth deputy desert design desk dessert destination destruction detail determination development device devil diamond diary dictionary diet difference difficulty dig dimension dinner direction director dirt disaster discipline discount discussion disease dish disk display distance distribution district divide division divorce doc doctor document dog doll dollar domain donkey door dot double doubt dough draft drama drawer dream dress drill drink drive driver drop drug drum duck dump dust duty ear earth earthquake ease east economy edge edition editor education effect effort egg ego elbow element elephant elevator emotion emphasis empire employee employer employment end enemy energy engine engineer engineering English entertainment enthusiasm entrance entry envelope environment epic episode equal equipment era error escape essay establishment estate estimate evaluation event evidence evil exam examination example exchange excitement excuse excuse exercise exhaust exhibition existence expansion expectation experience expert explanation expression face fact factor factory fail failure fall false family fan farm farmer fat fate father fault favor fear feather feature fee feedback feel feeling fellow female fence festival fever fiber fiction field fight figure file fill film filter final finance find fine finger finish fire firm fish flag flame flash flat flavor flesh flight float flock floor flour flow flower fluid fly focus fog fold folk food foot football force forecast forest fork form format formula fortune forum forward foundation fraction frame framework franchise fraud freedom frequency fresh friction fridge friend front fruit fuel fun function fund funeral funny fur furniture future gain game gap garage garbage garden gas gate gather gauge gear gene general generation generator gift girl glass glove goal goat gold golf good goose government governor gown grade grain gram grammar grand grandfather grandmother grant grape grass grave gravity gray great green grocery ground group growth guarantee guard guess guest guidance guide guild guilt guitar gun guy gym habit hair half hall hand handle hop hope horn horse hospital host hotel hour house husband ice idea image impact implication import importance impression improvement incident income increase independent index indication industry infant infection inflation influence information initiative injury insect inside instance institution instruction instrument insurance int intellect intelligence intention interest interior interpretation interview introduction invention investigation investment invitation iron island issue item jacket jail jam jar jaw jazz jeans jet jewel job joint joke journal journey joy judge judgment juice jump jury justice key kick kid kind king kiss kitchen knee knife knight knock knot knowledge lab label labor laboratory lack ladder lady lake lamb lamp land landscape language lap large laser last late laugh law lawyer layer lead leader leadership leaf league leak learning leather leave lecture left leg legacy legislation letter level liability library license lie life lift light likelihood limit line link lip liquid list literature location lock logic loop loss love luck luggage lunch lung machine magazine magic mail maintenance mall man management manager manner manufacturer manufacturing many map margin mark market marketing marriage mask mass match material math matter meal meaning measure meat mechanism media medicine medium member membership memory mention menu message metal metal method middle midnight might milk mind mine minimum minister minute mirror mistake mode model mom moment money monitor month mood moon moral morning mortgage mother motion mountain mouse mouth move movie mud muscle museum music musician nail name narrative nation nature navy neck need needle network news newspaper night noise none normal north nose note nothing notice notion novel number nurse nut object objective obligation observation occasion occupation ocean odd offer office officer official oil onion opening opera operation operator opinion opportunity option orange order ordinary organization origin other outcome outfit output oven over owl owner ownership pace pack package page pain paint painter painting pair palace palm pan panel panic pant paper parent park parking part participant particular partner party pass passage passenger passion past path patience patient pattern pause payment peace peak peasant pen penalty pencil penny people pepper percent percentage perception perfect performance period permission person personality perspective phase phenomenon philosophy phone photo photograph phrase physical physician physics piano pick picture piece pig pile pill pilot pin pipe pitch pizza place plan plane planet plant plastic plate platform play player plot plug pocket poem poet poetry point police policy polish politics poll pollution pool poor pop port portion position positive possibility post pot potato potential pound poverty powder power practice preference preparation presence present presentation president press pressure price pride priest primary principle print priority prison privacy private prize problem procedure process produce product production profession professor profile profit program progress project promise promotion proof property proportion proposal prospect protection protein protest psychology pub public publication pull pump punch punishment pupil purchase purpose push quality quantity quarter queen question quick quiet quote race radio rain raise range rate ratio reaction reality reason receipt receiver recent reception recipe record recording resource respect response responsibility rest result return reveal revenue review revolution reward rhythm rice rich ride right ring rise risk river road rock role roll roof room root rope rose rough round route routine row rub rule run rush sad safe safety sail salad salary sale salt same sand sandwich satisfaction save scale scene schedule scheme scholar school science scientist score screen script sea search season seat second secret secretary section sector security seed segment select selection self sell senior sense series set setting settlement sex shadow shake shame shape share shark sheep sheet shell shift shirt shock shoe shoot shop shore short shot shoulder shout show shower side sigh sight sign signal signature significance silence silver similar simple sin sing singer single sink sir sister sit site situation size skill skin skirt sky sleep slice slide slight slip smile smoke snow soap society sock soft software soil soldier solid solution somebody someone son song sort soul sound soup source south space speaker special specific speech speed spell spend spite sport spot spray spread spring square staff stage stair stake stand standard star stare start state statement station statistic status stay steak steal steel step stick still stock stomach stone stop store storm story strategy stream street strength stress stretch strike string structure struggle student studio study stuff style subject success suck sugar suggestion suit summer sun supper supply support suppose sure surface surgery surprise survey survival suspect system table tablet tackle tail take tale talk tall tank tap tape target task taste tax tea teach teacher team tear technique technology telephone television temperature ten tendency term test text thank theater theme theory therapy thing think thirst thought threat tie time tip title today toe tomato tomorrow tone tongue tonight tool tooth top topic total touch tour tourist towel town toy track trade tradition traffic trail train trait translation trash tree trial trick trip trouble truck true truth try tube turn twin type typical ugly uncle unit university unknown upper usage user usual vacation valid valley value variable variation variety various vary vast vegetable vehicle version vessel victim victory video view village violence vision visit visitor visual voice volume vote wage wait walk wall wander want war warm wash waste watch water wave way weak wealth weapon wear weather web wedding weed week weekend weight weird welcome west western wheel whereas whether while white whole wide width wife wild will win wind window wine wing winner winter wipe wire wisdom wise wish witness wolf woman wonder wood word work worker world worry worth wound wrap wrist write writer yard yawn year yellow yes yesterday yet yield you young youth zone";
+
+        const combinedString = extraLifeWords + " " + wordString;
+        const dictionary = [...new Set(combinedString.split(" "))].filter(w => w.length > 0);
+
+        const textarea = document.getElementById('chaosInput');
+        const revealDiv = document.getElementById('secret-reveal');
+
+        function calculateWord() {
+            const chaoticInput = textarea.value;
+            const cleanInput = chaoticInput.toLowerCase().replace(/[^a-z\n]/g, '');
+            const lines = cleanInput.trim().split('\n').filter(line => line.trim() !== '');
+            const targetLength = lines.length;
+            
+            if (targetLength === 0) return "";
+
+            let possibleWords = [];
+            
+            for (let i = 0; i < dictionary.length; i++) {
+                let word = dictionary[i];
+                if (word.length === targetLength) {
+                    let isMatch = true;
+                    for (let j = 0; j < targetLength; j++) {
+                        if (!lines[j].includes(word[j])) {
+                            isMatch = false;
+                            break;
+                        }
+                    }
+                    if (isMatch && !possibleWords.includes(word)) {
+                        possibleWords.push(word);
+                    }
+                }
+            }
+            
+            if (possibleWords.length > 0) {
+                return possibleWords.join(", ");
+            } else {
+                return "Something"; 
+            }
+        }
+
+        function formatOutput(str) {
+            return str.split(', ').map(word => {
+                return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+            }).join(', ');
+        }
+        
+        let lastTap = 0;
+        let isRevealed = false; 
+        let isTouchDevice = false; 
+
+        function toggleReveal() {
+            if (isRevealed) {
+                revealDiv.innerText = ""; 
+                isRevealed = false;
+            } else {
+                revealDiv.innerText = formatOutput(calculateWord()); 
+                isRevealed = true;
+            }
+        }
+
+        revealDiv.addEventListener('touchstart', function(e) {
+            isTouchDevice = true; 
+            let currentTime = new Date().getTime();
+            let tapLength = currentTime - lastTap;
+            
+            if (tapLength < 500 && tapLength > 0) {
+                e.preventDefault(); 
+                toggleReveal();
+                lastTap = 0; 
+            } else {
+                lastTap = currentTime;
+            }
+        }, { passive: false });
+
+        revealDiv.addEventListener('mousedown', function(e) {
+            if (isTouchDevice) return; 
+            
+            let currentTime = new Date().getTime();
+            let tapLength = currentTime - lastTap;
+            
+            if (tapLength < 500 && tapLength > 0) {
+                e.preventDefault();
+                toggleReveal();
+                lastTap = 0; 
+            } else {
+                lastTap = currentTime;
+            }
+        });
+
+    </script>
+    
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('./sw.js').then(function(registration) {
+                    console.log('SW 注册成功');
+                }).catch(function(err) {
+                    console.log('SW 注册失败: ', err);
+                });
+            });
+        }
+    </script>
+</body>
+</html>
